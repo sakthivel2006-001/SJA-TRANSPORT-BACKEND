@@ -80,6 +80,14 @@ const gallerySchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+});
+
+gallerySchema.virtual('image').get(function () {
+  return this.imageUrl;
+});
 
 module.exports = mongoose.model('Gallery', gallerySchema);

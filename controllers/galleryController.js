@@ -28,6 +28,8 @@ const normalizePayload = (body, file) => {
     payload.imageUrl = `/uploads/gallery/${file.filename}`;
   } else if (body.imageUrl) {
     payload.imageUrl = body.imageUrl;
+  } else if (body.image) {
+    payload.imageUrl = body.image;
   }
   
   return payload;
@@ -36,6 +38,13 @@ const normalizePayload = (body, file) => {
 // @desc    Add gallery image
 // @route   POST /api/gallery
 exports.createGalleryItem = asyncHandler(async (req, res) => {
+  if (!req.file && !req.body.imageUrl && !req.body.image) {
+    return res.status(400).json({
+      success: false,
+      message: 'Gallery image file is required',
+    });
+  }
+
   const item = await Gallery.create(normalizePayload(req.body, req.file));
   res.status(201).json({
     success: true,
@@ -81,7 +90,8 @@ exports.updateGalleryItem = asyncHandler(async (req, res) => {
   });
   
   if (req.file && oldItem.imageUrl && oldItem.imageUrl !== payload.imageUrl) {
-    const filePath = path.join(__dirname, '..', oldItem.imageUrl);
+    const imagePath = oldItem.imageUrl.replace(/^\/+/, '');
+    const filePath = path.join(__dirname, '..', imagePath);
     const fs = require('fs');
     if (fs.existsSync(filePath)) {
       try {
@@ -108,7 +118,8 @@ exports.deleteGalleryItem = asyncHandler(async (req, res) => {
   }
   
   if (item.imageUrl) {
-    const filePath = path.join(__dirname, '..', item.imageUrl);
+    const imagePath = item.imageUrl.replace(/^\/+/, '');
+    const filePath = path.join(__dirname, '..', imagePath);
     const fs = require('fs');
     if (fs.existsSync(filePath)) {
       try {

@@ -16,6 +16,8 @@ const { protect } = require('../middleware/authMiddleware');
 
 const galleryValidation = [
   body('title').notEmpty().withMessage('Title is required').trim(),
+  body('description').optional().trim(),
+  body('category').optional().trim(),
 ];
 
 router.post('/', protect, upload.single('image'), galleryValidation, validate, createGalleryItem);

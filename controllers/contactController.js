@@ -11,17 +11,11 @@ exports.createContactMessage = asyncHandler(async (req, res) => {
 
   const message = await ContactMessage.create(data);
 
-  // notify admin and send customer confirmation (best-effort, do not block)
-  try {
-    await sendContactNotification(message);
-  } catch (err) {
-    console.error('Failed to send contact notification email:', err.message);
-  }
-  try {
-    await sendContactReceived(message);
-  } catch (err) {
-    console.error('Failed to send contact confirmation email:', err.message);
-  }
+  // notify admin and send customer confirmation (best-effort, do not block response)
+  Promise.allSettled([
+    sendContactNotification(message).catch(err => console.error('Failed to send contact notification email:', err.message)),
+    sendContactReceived(message).catch(err => console.error('Failed to send contact confirmation email:', err.message)),
+  ]);
 
   res.status(201).json({
     success: true,
