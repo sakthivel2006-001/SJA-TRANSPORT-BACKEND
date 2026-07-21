@@ -77,9 +77,10 @@ const logRouteSummary = (routes) => {
 app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
+console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
 }));
 
