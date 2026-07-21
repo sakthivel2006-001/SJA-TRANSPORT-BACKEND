@@ -1,4 +1,6 @@
-require('dotenv').config({ override: true });
+require('dotenv').config();
+console.log("NODE_ENV =", process.env.NODE_ENV);
+console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
 const app = require('./app');
 const connectDB = require('./config/db');
 
