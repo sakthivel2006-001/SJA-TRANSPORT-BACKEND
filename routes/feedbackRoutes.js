@@ -1,0 +1,26 @@
+const express = require('express');
+const { body } = require('express-validator');
+const router = express.Router();
+const {
+  createFeedback,
+  getFeedback,
+  getApprovedFeedback,
+  updateFeedbackStatus,
+  deleteFeedback,
+} = require('../controllers/feedbackController');
+const validate = require('../middleware/validate');
+const { protect } = require('../middleware/authMiddleware');
+
+const feedbackValidation = [
+  body('customerName').notEmpty().withMessage('Customer name is required').trim(),
+  body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
+  body('review').notEmpty().withMessage('Review is required').trim(),
+];
+
+router.post('/', feedbackValidation, validate, createFeedback);
+router.get('/public', getApprovedFeedback);
+router.get('/', protect, getFeedback);
+router.patch('/:id/status', protect, updateFeedbackStatus);
+router.delete('/:id', protect, deleteFeedback);
+
+module.exports = router;
