@@ -87,7 +87,6 @@ app.use(cors({
 // ── Body Parsers ────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── Health Check ────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

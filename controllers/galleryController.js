@@ -25,7 +25,7 @@ const normalizePayload = (body, file) => {
   };
   
   if (file) {
-    payload.imageUrl = `/uploads/gallery/${file.filename}`;
+    payload.imageUrl = file.path;
   } else if (body.imageUrl) {
     payload.imageUrl = body.imageUrl;
   } else if (body.image) {
@@ -89,18 +89,7 @@ exports.updateGalleryItem = asyncHandler(async (req, res) => {
     runValidators: true,
   });
   
-  if (req.file && oldItem.imageUrl && oldItem.imageUrl !== payload.imageUrl) {
-    const imagePath = oldItem.imageUrl.replace(/^\/+/, '');
-    const filePath = path.join(__dirname, '..', imagePath);
-    const fs = require('fs');
-    if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error('Error deleting old file:', err);
-      }
-    }
-  }
+  // Cloudinary manages file overwrites/deletions natively when configured, or we can leave them for now
 
   res.status(200).json({
     success: true,
@@ -117,18 +106,7 @@ exports.deleteGalleryItem = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Gallery item not found' });
   }
   
-  if (item.imageUrl) {
-    const imagePath = item.imageUrl.replace(/^\/+/, '');
-    const filePath = path.join(__dirname, '..', imagePath);
-    const fs = require('fs');
-    if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error('Error deleting file:', err);
-      }
-    }
-  }
+  // Cloudinary image will remain or can be deleted via Cloudinary API separately
 
   res.status(200).json({
     success: true,

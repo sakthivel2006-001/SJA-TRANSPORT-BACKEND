@@ -39,14 +39,8 @@ const updateAdminProfile = async (req, res) => {
 
     // Handle profile photo upload
     if (req.file) {
-      // Delete old photo if it exists
-      if (admin.profilePhoto) {
-        const oldPath = path.join(__dirname, '..', admin.profilePhoto);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
-      }
-      admin.profilePhoto = `/uploads/profile/${req.file.filename}`;
+      // Cloudinary handles storage; no need to delete local file
+      admin.profilePhoto = req.file.path;
     }
 
     const updatedAdmin = await admin.save();

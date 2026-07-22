@@ -18,7 +18,7 @@ const normalizePayload = (body, file) => {
   };
   
   if (file) {
-    payload.image = `/uploads/vehicles/${file.filename}`;
+    payload.image = file.path;
   } else if (body.image) {
     payload.image = body.image;
   }
@@ -110,16 +110,7 @@ exports.updateVehicle = asyncHandler(async (req, res) => {
     runValidators: true,
   });
   
-  if (req.file && oldVehicle.image && oldVehicle.image !== payload.image) {
-    const filePath = path.join(__dirname, '..', oldVehicle.image);
-    if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error('Error deleting old file:', err);
-      }
-    }
-  }
+  // Cloudinary manages file overwrites/deletions natively when configured
 
   res.status(200).json({ success: true, data: vehicle });
 });
@@ -132,16 +123,7 @@ exports.deleteVehicle = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Vehicle not found' });
   }
   
-  if (vehicle.image) {
-    const filePath = path.join(__dirname, '..', vehicle.image);
-    if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error('Error deleting file:', err);
-      }
-    }
-  }
+  // Cloudinary image will remain or can be deleted via Cloudinary API separately
 
   res.status(200).json({ success: true, data: {} });
 });

@@ -31,7 +31,7 @@ exports.createService = async (req, res) => {
   try {
     const payload = { ...req.body };
     if (req.file) {
-      payload.image = `/uploads/services/${req.file.filename}`;
+      payload.image = req.file.path;
     }
     // Normalize boolean fields
     if (typeof payload.isActive === 'string') {
@@ -64,7 +64,7 @@ exports.updateService = async (req, res) => {
 
     const payload = { ...req.body };
     if (req.file) {
-      payload.image = `/uploads/services/${req.file.filename}`;
+      payload.image = req.file.path;
     }
 
     // Normalize boolean
@@ -82,17 +82,7 @@ exports.updateService = async (req, res) => {
       runValidators: true,
     });
 
-    // delete old file if replaced
-    if (req.file && existing.image && existing.image !== payload.image) {
-      const filePath = path.join(__dirname, '..', existing.image);
-      if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-        } catch (err) {
-          console.error('Error deleting old service image:', err);
-        }
-      }
-    }
+    // Cloudinary manages file overwrites/deletions natively when configured
 
     res.status(200).json({ success: true, data: service });
   } catch (error) {
@@ -105,16 +95,7 @@ exports.deleteService = async (req, res) => {
     const service = await TransportService.findById(req.params.id);
     if (!service) return res.status(404).json({ success: false, message: 'Service not found' });
 
-    if (service.image) {
-      const filePath = path.join(__dirname, '..', service.image);
-      if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-        } catch (err) {
-          console.error('Error deleting service image:', err);
-        }
-      }
-    }
+    // Cloudinary image will remain or can be deleted via Cloudinary API separately
 
     await service.deleteOne();
     res.status(200).json({ success: true, data: {} });
