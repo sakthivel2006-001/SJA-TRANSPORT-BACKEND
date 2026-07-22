@@ -4,6 +4,7 @@ const { sendOwnerEmail } = require('../utils/resendEmail');
 /* Booking notification */
 const sendBookingNotification = async (booking) => {
   const formattedDate = new Date(booking.pickupDate).toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -29,7 +30,7 @@ const sendBookingNotification = async (booking) => {
             <tr><td style="padding:10px 0;color:#6b7280">Pickup Date</td><td style="padding:10px 0;font-weight:600">${formattedDate}</td></tr>
             <tr><td style="padding:10px 0;color:#6b7280">Goods Description</td><td style="padding:10px 0;font-weight:600">${booking.goodsDescription}</td></tr>
             <tr><td style="padding:10px 0;color:#6b7280">Additional Notes</td><td style="padding:10px 0;font-weight:600">${booking.additionalNotes || 'N/A'}</td></tr>
-            <tr><td style="padding:10px 0;color:#6b7280">Booking Time</td><td style="padding:10px 0;font-weight:600">${new Date(booking.createdAt).toLocaleString('en-IN')}</td></tr>
+            <tr><td style="padding:10px 0;color:#6b7280">Booking Time</td><td style="padding:10px 0;font-weight:600">${new Date(booking.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</td></tr>
           </table>
         </div>
 
@@ -45,7 +46,7 @@ const sendBookingNotification = async (booking) => {
 
 /* Booking: send confirmation to customer */
 const sendBookingConfirmation = async (booking) => {
-  const formattedDate = booking.pickupDate ? new Date(booking.pickupDate).toLocaleDateString('en-IN') : 'N/A';
+  const formattedDate = booking.pickupDate ? new Date(booking.pickupDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'N/A';
   const toEmail = booking.email || booking.customerEmail || booking.customerPhoneOwner || booking.phone;
   const toName = booking.customerName || booking.name || 'Customer';
   const subject = `Booking Received - SJA TRANSPORT`;
