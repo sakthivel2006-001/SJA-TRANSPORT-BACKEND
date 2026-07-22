@@ -34,9 +34,9 @@ exports.createBooking = asyncHandler(async (req, res) => {
 
   const booking = await Booking.create(req.body);
 
-  // Send emails: confirmation to customer and notification to admin (best-effort asynchronously)
+  // Send emails: notification to admin (best-effort asynchronously)
   Promise.allSettled([
-    sendBookingConfirmation(booking).catch(err => console.error('Failed to send booking confirmation:', err.message)),
+    // sendBookingConfirmation(booking).catch(err => console.error('Failed to send booking confirmation:', err.message)),
     sendBookingNotification(booking).catch(err => console.error('Email notification failed:', err.message))
   ]);
 

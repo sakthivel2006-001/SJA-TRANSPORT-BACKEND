@@ -1,4 +1,10 @@
 async function sendEmail({ to, toName, subject, htmlContent }) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!to || typeof to !== "string" || !emailRegex.test(to)) {
+    console.warn(`⚠️ Skipped sending email — invalid recipient: ${to}`);
+    return;
+  }
+
   try {
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
