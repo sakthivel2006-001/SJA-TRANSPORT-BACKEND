@@ -1,24 +1,18 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: false,      // Port 587 uses STARTTLS
-  requireTLS: true,
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
 });
 
-transporter.verify((error) => {
-  if (error) {
-    console.error("❌ SMTP Error:", error);
+transporter.verify((err) => {
+  if (err) {
+    console.error(err);
   } else {
-    console.log("✅ SMTP Server is ready");
+    console.log("SMTP Connected Successfully");
   }
 });
 
