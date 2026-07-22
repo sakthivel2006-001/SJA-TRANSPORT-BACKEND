@@ -1,4 +1,4 @@
-const transporter = require('../config/email');
+const { sendEmail } = require('../utils/brevoEmail');
 
 /* Booking notification */
 const sendBookingNotification = async (booking) => {
@@ -8,11 +8,8 @@ const sendBookingNotification = async (booking) => {
     day: 'numeric',
   });
 
-  const mailOptions = {
-    from: `"SJA TRANSPORT" <${process.env.EMAIL_USER}>`,
-    to: process.env.OWNER_EMAIL,
-    subject: `New Booking – ${booking.customerName}`,
-    html: `
+  const subject = `New Booking – ${booking.customerName}`;
+  const htmlContent = `
       <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;padding:30px;background:#f9fafb;border-radius:12px">
         <div style="background:#0F172A;color:#fff;padding:20px 30px;border-radius:8px;text-align:center">
           <h1 style="margin:0;color:#D4AF37;font-size:24px">New Booking Received</h1>
@@ -37,23 +34,26 @@ const sendBookingNotification = async (booking) => {
 
         <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:20px">&copy; ${new Date().getFullYear()} SJA TRANSPORT. All rights reserved.</p>
       </div>
-    `,
-  };
+    `;
 
-  await transporter.sendMail(mailOptions);
+  await sendEmail({
+    to: process.env.OWNER_EMAIL,
+    toName: 'Admin',
+    subject,
+    htmlContent,
+  });
 };
 
 /* Booking: send confirmation to customer */
 const sendBookingConfirmation = async (booking) => {
   const formattedDate = booking.pickupDate ? new Date(booking.pickupDate).toLocaleDateString('en-IN') : 'N/A';
-  const mailOptions = {
-    from: `"SJA TRANSPORT" <${process.env.EMAIL_USER}>`,
-    to: booking.email || booking.customerEmail || booking.customerPhoneOwner || booking.phone,
-    subject: `Booking Received - SJA TRANSPORT`,
-    html: `
+  const toEmail = booking.email || booking.customerEmail || booking.customerPhoneOwner || booking.phone;
+  const toName = booking.customerName || booking.name || 'Customer';
+  const subject = `Booking Received - SJA TRANSPORT`;
+  const htmlContent = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff">
         <h2 style="color:#0F172A">Booking Received - SJA TRANSPORT</h2>
-        <p>Dear ${booking.customerName || booking.name || 'Customer'},</p>
+        <p>Dear ${toName},</p>
         <p>Thank you for choosing SJA TRANSPORT.</p>
         <p>Your shipment booking has been received successfully.</p>
         <table style="width:100%;border-collapse:collapse;margin-top:12px">
@@ -70,9 +70,14 @@ const sendBookingConfirmation = async (booking) => {
         <p style="margin-top:12px">Our team will review your booking shortly.</p>
         <p style="margin-top:12px">Thank you.<br/>SJA TRANSPORT</p>
       </div>
-    `,
-  };
-  await transporter.sendMail(mailOptions);
+    `;
+
+  await sendEmail({
+    to: toEmail,
+    toName: toName,
+    subject,
+    htmlContent,
+  });
 };
 
 /* Booking: send status update to customer */
@@ -96,14 +101,13 @@ const sendBookingStatusUpdate = async (booking) => {
   };
 
   const body = messages[status] || `Your booking status changed to ${status}`;
-  const mailOptions = {
-    from: `"SJA TRANSPORT" <${process.env.EMAIL_USER}>`,
-    to: booking.email || booking.customerEmail || booking.phone,
-    subject: subjects[status] || `Booking Update - ${status}`,
-    html: `
+  const toEmail = booking.email || booking.customerEmail || booking.phone;
+  const toName = booking.customerName || 'Customer';
+  const subject = subjects[status] || `Booking Update - ${status}`;
+  const htmlContent = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff">
         <h2 style="color:#0F172A">${subjects[status] || 'Booking Update'}</h2>
-        <p>Dear ${booking.customerName || 'Customer'},</p>
+        <p>Dear ${toName},</p>
         <p>${body}</p>
         <table style="width:100%;border-collapse:collapse;margin-top:12px">
           <tr><td style="padding:6px;color:#6b7280;width:40%">Booking ID</td><td style="padding:6px;font-weight:600">${booking.bookingId || ''}</td></tr>
@@ -115,18 +119,20 @@ const sendBookingStatusUpdate = async (booking) => {
         <p style="margin-top:12px">Our team will contact you shortly.</p>
         <p style="margin-top:12px">Thank you.<br/>SJA TRANSPORT</p>
       </div>
-    `,
-  };
-  await transporter.sendMail(mailOptions);
+    `;
+
+  await sendEmail({
+    to: toEmail,
+    toName: toName,
+    subject,
+    htmlContent,
+  });
 };
 
 /* Contact: notify admin of new contact message */
 const sendContactNotification = async (contact) => {
-  const mailOptions = {
-    from: `"SJA TRANSPORT" <${process.env.EMAIL_USER}>`,
-    to: process.env.OWNER_EMAIL,
-    subject: `New Contact Message – ${contact.subject || contact.name}`,
-    html: `
+  const subject = `New Contact Message – ${contact.subject || contact.name}`;
+  const htmlContent = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff">
         <h2 style="color:#0F172A">New Contact Message</h2>
         <p><strong>From:</strong> ${contact.customerName || contact.name} &lt;${contact.email}&gt;</p>
@@ -134,49 +140,56 @@ const sendContactNotification = async (contact) => {
         <p><strong>Subject:</strong> ${contact.subject || 'N/A'}</p>
         <div style="margin-top:12px;padding:12px;background:#f3f4f6;border-radius:8px">${contact.message}</div>
       </div>
-    `,
-  };
+    `;
 
-  await transporter.sendMail(mailOptions);
+  await sendEmail({
+    to: process.env.OWNER_EMAIL,
+    toName: 'Admin',
+    subject,
+    htmlContent,
+  });
 };
 
 /* Contact: send confirmation to customer after they submit a message */
 const sendContactReceived = async (contact) => {
-  const mailOptions = {
-    from: `"SJA TRANSPORT" <${process.env.EMAIL_USER}>`,
-    to: contact.email,
-    subject: `We received your message - SJA Transport`,
-    html: `
+  const toEmail = contact.email;
+  const toName = contact.customerName || contact.name || 'Customer';
+  const subject = `We received your message - SJA Transport`;
+  const htmlContent = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff">
         <h2 style="color:#0F172A">Thank you for contacting SJA Transport</h2>
-        <p>Hi ${contact.customerName || contact.name || ''},</p>
+        <p>Hi ${toName},</p>
         <p>We have received your message and our team will get back to you shortly.</p>
         <div style="margin-top:12px;padding:12px;background:#f3f4f6;border-radius:8px">${contact.message}</div>
         <p style="margin-top:12px">Regards,<br/>SJA Transport Team</p>
       </div>
-    `,
-  };
+    `;
 
-  await transporter.sendMail(mailOptions);
+  await sendEmail({
+    to: toEmail,
+    toName: toName,
+    subject,
+    htmlContent,
+  });
 };
 
 /* Contact: send admin reply to customer */
 const sendContactReply = async ({ to, subject, message, adminName }) => {
-  const mailOptions = {
-    from: `"SJA TRANSPORT" <${process.env.EMAIL_USER}>`,
-    to,
-    subject: subject || 'Reply from SJA Transport',
-    html: `
+  const htmlContent = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff">
         <h2 style="color:#0F172A">Message from SJA Transport</h2>
         <p>Dear Customer,</p>
         <div style="margin-top:12px;padding:12px;background:#f3f4f6;border-radius:8px">${message}</div>
         <p style="margin-top:12px">Regards,<br/>${adminName || 'SJA Transport Team'}</p>
       </div>
-    `,
-  };
+    `;
 
-  await transporter.sendMail(mailOptions);
+  await sendEmail({
+    to: to,
+    toName: 'Customer',
+    subject: subject || 'Reply from SJA Transport',
+    htmlContent,
+  });
 };
 
 module.exports = { sendBookingNotification, sendBookingConfirmation, sendBookingStatusUpdate, sendContactNotification, sendContactReceived, sendContactReply };
