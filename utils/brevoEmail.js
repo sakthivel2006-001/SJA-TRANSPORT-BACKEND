@@ -1,10 +1,13 @@
-const axios = require("axios");
-
 async function sendEmail({ to, toName, subject, htmlContent }) {
   try {
-    const response = await axios.post(
-      "https://api.brevo.com/v3/smtp/email",
-      {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
         sender: {
           name: "SJA TRANSPORT",
           email: "sattransportofficial@gmail.com",
@@ -17,22 +20,19 @@ async function sendEmail({ to, toName, subject, htmlContent }) {
         ],
         subject,
         htmlContent,
-      },
-      {
-        headers: {
-          "api-key": process.env.BREVO_API_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      }),
+    });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Status ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
     console.log("✅ Email sent successfully");
-    return response.data;
+    return data;
   } catch (error) {
-    console.error(
-      "❌ Brevo Email Error:",
-      error.response?.data || error.message
-    );
+    console.error("❌ Brevo Email Error:", error.message);
   }
 }
 
