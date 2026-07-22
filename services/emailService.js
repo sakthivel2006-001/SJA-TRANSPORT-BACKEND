@@ -1,4 +1,5 @@
 const { sendEmail } = require('../utils/brevoEmail');
+const { sendOwnerEmail } = require('../utils/resendEmail');
 
 /* Booking notification */
 const sendBookingNotification = async (booking) => {
@@ -36,9 +37,7 @@ const sendBookingNotification = async (booking) => {
       </div>
     `;
 
-  await sendEmail({
-    to: process.env.OWNER_EMAIL,
-    toName: 'Admin',
+  await sendOwnerEmail({
     subject,
     htmlContent,
   });
